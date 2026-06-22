@@ -119,7 +119,7 @@ ClearFolderContents(FolderPath) {
 !d:: {
     try xl := ComObjActive("Excel.Application")
     catch {
-        MsgBox "Excel is not running."
+        TrayTip "Excel is not running."
         return
     }
 
@@ -156,7 +156,7 @@ ClearFolderContents(FolderPath) {
     Send("!t")  ; PowerToys Text Extractor
 
     if !ClipWait(5) {
-        MsgBox("Failed to get text from PowerToys.")
+        TrayTip("Failed to get text from PowerToys.")
         A_Clipboard := ClipSaved
         return
     }
@@ -196,7 +196,7 @@ OpenIPSGate(cleanNumber, CONFIG, ClipSaved) {
     }
 
     if (!opened) {
-        MsgBox("Unable to open link in any configured location.")
+        TrayTip("Unable to open link in any configured location.")
     }
 
     ; Restore clipboard
@@ -214,7 +214,7 @@ OpenIPSGate(cleanNumber, CONFIG, ClipSaved) {
 
     Send "^c"
     if !ClipWait(1) {
-        MsgBox "No folder selected."
+        TrayTip "No folder selected."
         A_Clipboard := OldClip
         return
     }
@@ -253,7 +253,7 @@ OpenIPSGate(cleanNumber, CONFIG, ClipSaved) {
         if (A_Clipboard != "" && A_Clipboard != ClipSaved)
             break
         if ((A_TickCount - StartTime) > ClipWaitTimeout) {
-            MsgBox("Failed to get text from PowerToys.")
+            TrayTip("Failed to get text from PowerToys.")
             A_Clipboard := ClipSaved
             return
         }
@@ -463,7 +463,7 @@ ExeFile := A_Desktop "\AutoChecker\Binaries\dicomcheck_v8.exe"
     SelectedItems := GetSelectedExplorerItems()
 
     if (SelectedItems.Length = 0) {
-        MsgBox "No files or folders selected in Explorer."
+        TrayTip "No files or folders selected in Explorer."
         return
     }
 
@@ -484,7 +484,7 @@ ExeFile := A_Desktop "\AutoChecker\Binaries\dicomcheck_v8.exe"
                 FileMove(Item, Destination)
         }
         catch Error as Err {
-            MsgBox "Failed to move:`n" Item "`n`n" Err.Message
+            TrayTip "Failed to move:`n" Item "`n`n" Err.Message
             return
         }
     }
