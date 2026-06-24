@@ -59,6 +59,24 @@ RestartScript(*) {
 ; UTILITY FUNCTIONS
 ; ------------------------
 
+; --- Strip common titles ---
+StripNameTitle(line) {
+    titles := ["Sales Associate", "Manager", "Director", "VP", "Vice President", "Executive", "Coordinator", "Assistant", "Engineer", "Specialist", "Senior Sales Consultant", "Senior Executive Sales Consultant", "Sales Consultant", "Mr."]
+    for _, title in titles {
+        line := RegExReplace(line, "^(?i)\s*" . title . "\s+", "")
+        line := RegExReplace(line, "\s+" . title . "\s*$(?i)", "")
+    }
+    return line
+}
+
+; --- Join array elements with a separator ---
+StrJoin(sep, arr*) {
+    result := ""
+    for _, val in arr
+        result .= (result = "" ? "" : sep) . val
+    return result
+}
+
 ; Trim leading/trailing whitespace
 Trim(str) {
     return RegExReplace(str, "^\s+|\s+$")
@@ -115,6 +133,27 @@ ClearFolderContents(FolderPath) {
     ; Delete folders recursively
     Loop Files FolderPath "\*", "D"
         DirDelete(A_LoopFileFullPath, true)
+}
+
+;;;CaseFill Function
+FillCaseType(caseType) {
+    Send("{F5}")
+    Sleep(50)
+    Send("B4")       
+    Send("{Enter}")
+    Send(caseType)
+    Send("{Enter}")
+}
+
+;;;AnatomyFill Function
+FillAnatomy(anatomyKey) {
+    Send("{F5}")
+    Sleep(50)
+    Send("B5")       
+    Send("{Enter}")
+    Sleep(100)
+    Send(anatomyKey)
+    Send("{Enter}")
 }
 
 ; ------------------------
@@ -310,23 +349,6 @@ OpenIPSGate(cleanNumber, CONFIG, ClipSaved) {
     ClipSaved := ""
 }
 
-; --- Strip common titles ---
-StripNameTitle(line) {
-    titles := ["Sales Associate", "Manager", "Director", "VP", "Vice President", "Executive", "Coordinator", "Assistant", "Engineer", "Specialist", "Senior Sales Consultant", "Senior Executive Sales Consultant", "Sales Consultant", "Mr."]
-    for _, title in titles {
-        line := RegExReplace(line, "^(?i)\s*" . title . "\s+", "")
-        line := RegExReplace(line, "\s+" . title . "\s*$(?i)", "")
-    }
-    return line
-}
-
-; --- Join array elements with a separator ---
-StrJoin(sep, arr*) {
-    result := ""
-    for _, val in arr
-        result .= (result = "" ? "" : sep) . val
-    return result
-}
 
 ; ------------------------
 ; !X - Create Case Folder Script
@@ -513,25 +535,6 @@ RunWait(cmd)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indication Fill
-FillCaseType(caseType) {
-    Send("{F5}")
-    Sleep(50)
-    Send("B4")       
-    Send("{Enter}")
-    Send(caseType)
-    Send("{Enter}")
-}
-
-FillAnatomy(anatomyKey) {
-    Send("{F5}")
-    Sleep(50)
-    Send("B5")       
-    Send("{Enter}")
-    Sleep(100)
-    Send(anatomyKey)
-    Send("{Enter}")
-}
-
 
 !Numpad1::{  
     FillCaseType("Orthog")
