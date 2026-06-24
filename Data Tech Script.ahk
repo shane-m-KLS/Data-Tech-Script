@@ -47,6 +47,14 @@ InitConfig() {
 
 }
 
+#SingleInstance Force
+A_TrayMenu.Add() ; separator
+A_TrayMenu.Add("Restart Script", RestartScript)
+
+RestartScript(*) {
+    Run('"' A_ScriptFullPath '"')
+    ExitApp
+}
 ; ------------------------
 ; UTILITY FUNCTIONS
 ; ------------------------
