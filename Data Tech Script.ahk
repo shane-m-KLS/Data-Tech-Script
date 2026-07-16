@@ -108,6 +108,30 @@ GetFullName() {
     return CONFIG["FirstName"] . " " . CONFIG["LastName"]
 }
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Get selected folder
+GetSelectedExplorerFolder() {
+    shell := ComObject("Shell.Application")
+
+    for window in shell.Windows {
+        try {
+            if window.HWND != WinActive("A")
+                continue
+
+            items := window.Document.SelectedItems
+
+            if items.Count = 1 {
+                item := items.Item(0)
+
+                if InStr(item.Path, ":\") && DirExist(item.Path)
+                    return item.Path
+            }
+        }
+    }
+
+    return ""
+}
+; Get selected items in Explorer
 GetSelectedExplorerItems() {
     Items := []
 
@@ -533,6 +557,38 @@ cmd := A_ComSpec
 RunWait(cmd)
 }
 
+;;;;;;;;;;
+;;;;; STL Search
+!y::SearchForSTLs()    ; Alt+y
+
+SearchForSTLs() {
+    folder := GetSelectedExplorerFolder()
+
+    if !folder {
+        TempTip("Please select a folder in File Explorer.")
+        return
+    }
+
+    found := false
+
+    ; Search recursively for the first STL file
+    Loop Files folder "\*.stl", "R" {
+        found := true
+        break
+    }
+
+    if found
+        TempTip("✓ STL file(s) found!")
+    else
+        TempTip("✗ No STL files found.")
+}
+
+
+
+TempTip(text, duration := 1500) {
+    ToolTip(text)
+    SetTimer(() => ToolTip(), -duration)
+}
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indication Fill
 
