@@ -44,7 +44,7 @@ InitConfig() {
     CONFIG["ClosedIPSGate"]       := "O:\MAN_Engineering\Closed_IPS_Gate\"
 	CONFIG["SharedTemplates"]     := "O:\MAN_Engineering\Shared Templates\"
     CONFIG["DataCheck"]           := CONFIG["SharedTemplates"] "IPS Data Check\"
-
+	CONFIG["SurgPreferences"]			  := "O:\MAN_Engineering\Surgeon Preferences\Surgeon Preferences"
 }
 
 #SingleInstance Force
@@ -179,10 +179,105 @@ FillAnatomy(anatomyKey) {
     Send(anatomyKey)
     Send("{Enter}")
 }
+;;; Search function
+SearchSurgPreferences(SearchText, SearchRoot)
+{
+    if (SearchText = "")
+    {
+        TrayTip("Search", "No text was captured.", 2)
+        return
+    }
+
+    ;----------------------------
+    ; Clean OCR text
+    ;----------------------------
+    SearchText := Trim(SearchText)
+
+    SearchText := RegExReplace(SearchText, "[`r`n]+", " ")
+    SearchText := RegExReplace(SearchText, "\s+", " ")
+
+    ; Remove common titles/suffixes
+    SearchText := RegExReplace(SearchText, "i)^(dr\.?\s+)")
+    SearchText := RegExReplace(SearchText, "i)\s+(md|do|pa-c|pa|np|rn|phd)$")
+
+    ;----------------------------
+    ; Convert to "Last, First"
+    ;----------------------------
+    if InStr(SearchText, ",")
+    {
+        ; Already "Last, First"
+        Parts := StrSplit(SearchText, ",")
+
+        Last := Trim(Parts[1])
+
+        FirstParts := StrSplit(Trim(Parts[2]), " ")
+        First := FirstParts[1]
+
+        SearchText := Last ", " First
+    }
+    else
+    {
+        Parts := StrSplit(SearchText, " ")
+
+        if (Parts.Length >= 2)
+        {
+            ; Assume first word = first name
+            ; last word = last name
+            First := Parts[1]
+            Last := Parts[Parts.Length]
+
+            SearchText := Last ", " First
+        }
+    }
+
+    ;----------------------------
+    ; Search top-level folders only
+    ;----------------------------
+    Loop Files SearchRoot "\*", "D"
+    {
+        if InStr(A_LoopFileName, SearchText)
+        {
+            Run('explorer.exe "' A_LoopFileFullPath '"')
+            return
+        }
+    }
+
+    TrayTip("Search", "No match found:`n" SearchText, 3)
+}
 
 ; ------------------------
 ; HOTKEYS
 ; ------------------------
+!l::
+{
+    ClipSaved := ClipboardAll()
+    A_Clipboard := ""
+
+    Sleep(100)
+
+    ; Launch PowerToys Text Extractor
+    Send("!t")
+
+    if !ClipWait(5)
+    {
+        TrayTip("Search", "Failed to get text from PowerToys.", 2)
+        A_Clipboard := ClipSaved
+        return
+    }
+
+    ; Clean OCR text
+    SearchText := Trim(A_Clipboard)
+    SearchText := StrReplace(SearchText, "`r")
+    SearchText := StrReplace(SearchText, "`n", " ")
+
+    ; Collapse multiple spaces into one
+    while InStr(SearchText, "  ")
+        SearchText := StrReplace(SearchText, "  ", " ")
+
+    SearchSurgPreferences(SearchText, CONFIG["SurgPreferences"])
+
+    A_Clipboard := ClipSaved
+}
 
 ; ------------------------
 ; !D - IO Model Paste
